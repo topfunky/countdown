@@ -1,11 +1,11 @@
 .PHONY: build test format lint install-deps clean run snapshot release-local
 
 # Build the application
-build:
+build: clean
 	go build -o countdown .
 
 # Run tests
-test:
+test: clean
 	go test -v ./...
 
 # Format code
