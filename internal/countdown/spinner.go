@@ -1,6 +1,8 @@
 package countdown
 
 import (
+	"time"
+
 	"github.com/charmbracelet/bubbles/spinner"
 )
 
@@ -17,8 +19,8 @@ var SpinnerMap = map[string]spinner.Spinner{
 	"monkey":    spinner.Monkey,
 	"meter":     spinner.Meter,
 	"hamburger": spinner.Hamburger,
-	"bomb":      {Frames: []string{"💣", "💥"}, FPS: 3},
-	"none":      {Frames: []string{""}, FPS: 1},
+	"bomb":      {Frames: []string{"💣", "💥"}, FPS: time.Second / 2},
+	"none":      {Frames: []string{""}, FPS: time.Second},
 }
 
 // GetSpinner returns the spinner configuration for the given name.
