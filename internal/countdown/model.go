@@ -2,6 +2,7 @@ package countdown
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -157,26 +158,27 @@ func (m Model) View() string {
 	countStr := strconv.Itoa(m.current)
 	var countView string
 	if inFinalPhase {
-		// Swap foreground and background for final phase
-		finalStyle := m.countStyle.Copy()
-		if m.config.TitleForeground != "" || m.config.SpinnerForeground != "" {
-			fg := m.config.TitleForeground
-			if fg == "" {
-				fg = m.config.SpinnerForeground
-			}
-			finalStyle = finalStyle.Background(parseColor(fg))
+		// Final phase: foreground becomes background, text is high-contrast
+		finalStyle := lipgloss.NewStyle()
+
+		// Determine the foreground color to use as background
+		fgColor := m.config.SpinnerForeground // Default foreground
+		if m.config.TitleForeground != "" {
+			fgColor = m.config.TitleForeground
 		}
-		if m.config.TitleBackground != "" || m.config.SpinnerBackground != "" {
-			bg := m.config.TitleBackground
-			if bg == "" {
-				bg = m.config.SpinnerBackground
-			}
-			finalStyle = finalStyle.Foreground(parseColor(bg))
+
+		// Set the original foreground as the new background
+		if fgColor != "" {
+			finalStyle = finalStyle.Background(parseColor(fgColor))
+		} else {
+			// Use default spinner color (212) as background
+			fgColor = "212"
+			finalStyle = finalStyle.Background(parseColor(fgColor))
 		}
-		// If no colors were set, use default inverse
-		if m.config.TitleForeground == "" && m.config.SpinnerForeground == "" {
-			finalStyle = finalStyle.Reverse(true)
-		}
+
+		// Calculate high-contrast foreground for readability
+		finalStyle = finalStyle.Foreground(highContrastColor(fgColor))
+
 		countView = finalStyle.Render(countStr)
 	} else {
 		countView = m.countStyle.Render(countStr)
@@ -212,6 +214,131 @@ func parseColor(s string) lipgloss.TerminalColor {
 
 	// Otherwise treat as hex or named color
 	return lipgloss.Color(s)
+}
+
+// highContrastColor returns a high-contrast foreground color (black or white)
+// for the given background color string.
+func highContrastColor(bgColor string) lipgloss.TerminalColor {
+	bgColor = strings.TrimSpace(bgColor)
+	if bgColor == "" {
+		return lipgloss.Color("15") // White for default/empty background
+	}
+
+	r, g, b := colorToRGB(bgColor)
+	luminance := calcLuminance(r, g, b)
+
+	// Use black text on light backgrounds, white on dark
+	if luminance > 0.5 {
+		return lipgloss.Color("0") // Black
+	}
+	return lipgloss.Color("15") // White
+}
+
+// colorToRGB converts a color string to RGB values (0-255).
+func colorToRGB(s string) (r, g, b uint8) {
+	s = strings.TrimSpace(s)
+
+	// Handle hex colors
+	if strings.HasPrefix(s, "#") {
+		return hexToRGB(s)
+	}
+
+	// Handle ANSI 256 colors
+	if num, err := strconv.Atoi(s); err == nil {
+		return ansi256ToRGB(num)
+	}
+
+	// Default to white if unknown
+	return 255, 255, 255
+}
+
+// hexToRGB converts a hex color string to RGB.
+func hexToRGB(hex string) (r, g, b uint8) {
+	hex = strings.TrimPrefix(hex, "#")
+
+	if len(hex) == 3 {
+		// Short form #RGB -> #RRGGBB
+		hex = string([]byte{hex[0], hex[0], hex[1], hex[1], hex[2], hex[2]})
+	}
+
+	if len(hex) != 6 {
+		return 255, 255, 255
+	}
+
+	var rgb uint64
+	rgb, _ = strconv.ParseUint(hex, 16, 32)
+	return uint8(rgb >> 16), uint8((rgb >> 8) & 0xFF), uint8(rgb & 0xFF)
+}
+
+// ansi256ToRGB converts an ANSI 256 color number to RGB.
+func ansi256ToRGB(n int) (r, g, b uint8) {
+	if n < 0 || n > 255 {
+		return 255, 255, 255
+	}
+
+	// Standard colors (0-15)
+	if n < 16 {
+		// Basic ANSI colors approximate RGB values
+		standard := [][3]uint8{
+			{0, 0, 0},       // 0: Black
+			{128, 0, 0},     // 1: Red
+			{0, 128, 0},     // 2: Green
+			{128, 128, 0},   // 3: Yellow
+			{0, 0, 128},     // 4: Blue
+			{128, 0, 128},   // 5: Magenta
+			{0, 128, 128},   // 6: Cyan
+			{192, 192, 192}, // 7: White
+			{128, 128, 128}, // 8: Bright Black
+			{255, 0, 0},     // 9: Bright Red
+			{0, 255, 0},     // 10: Bright Green
+			{255, 255, 0},   // 11: Bright Yellow
+			{0, 0, 255},     // 12: Bright Blue
+			{255, 0, 255},   // 13: Bright Magenta
+			{0, 255, 255},   // 14: Bright Cyan
+			{255, 255, 255}, // 15: Bright White
+		}
+		return standard[n][0], standard[n][1], standard[n][2]
+	}
+
+	// Color cube (16-231): 6x6x6 cube
+	if n < 232 {
+		n -= 16
+		ri := n / 36
+		gi := (n % 36) / 6
+		bi := n % 6
+
+		// Convert 0-5 to 0-255 (0, 95, 135, 175, 215, 255)
+		toVal := func(i int) uint8 {
+			if i == 0 {
+				return 0
+			}
+			return uint8(55 + i*40)
+		}
+		return toVal(ri), toVal(gi), toVal(bi)
+	}
+
+	// Grayscale (232-255): 24 shades
+	gray := uint8(8 + (n-232)*10)
+	return gray, gray, gray
+}
+
+// calcLuminance calculates relative luminance using sRGB.
+func calcLuminance(r, g, b uint8) float64 {
+	// Convert to linear RGB
+	toLinear := func(v uint8) float64 {
+		f := float64(v) / 255.0
+		if f <= 0.03928 {
+			return f / 12.92
+		}
+		return math.Pow((f+0.055)/1.055, 2.4)
+	}
+
+	rLin := toLinear(r)
+	gLin := toLinear(g)
+	bLin := toLinear(b)
+
+	// Calculate luminance (ITU-R BT.709)
+	return 0.2126*rLin + 0.7152*gLin + 0.0722*bLin
 }
 
 // Run starts the countdown application.

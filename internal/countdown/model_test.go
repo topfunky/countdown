@@ -145,3 +145,92 @@ func TestModelView(t *testing.T) {
 		t.Errorf("View() should return empty string when done, got %q", view)
 	}
 }
+
+func TestHighContrastColor(t *testing.T) {
+	tests := []struct {
+		name    string
+		bgColor string
+		want    string // "0" for black, "15" for white
+	}{
+		{"empty defaults to white text", "", "15"},
+		{"black bg gets white text", "0", "15"},
+		{"white bg gets black text", "15", "0"},
+		{"bright yellow gets black text", "11", "0"},
+		{"dark blue gets white text", "4", "15"},
+		{"pink 212 gets white text", "212", "15"}, // luminance ~0.43, below threshold
+		{"hex white gets black text", "#ffffff", "0"},
+		{"hex black gets white text", "#000000", "15"},
+		{"hex red gets white text", "#ff0000", "15"},
+		{"grayscale light gets black", "255", "0"},
+		{"grayscale dark gets white", "232", "15"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := highContrastColor(tt.bgColor)
+			gotColor, ok := got.(lipgloss.Color)
+			if !ok {
+				t.Errorf("highContrastColor(%q) did not return lipgloss.Color", tt.bgColor)
+				return
+			}
+			if string(gotColor) != tt.want {
+				t.Errorf("highContrastColor(%q) = %q, want %q", tt.bgColor, gotColor, tt.want)
+			}
+		})
+	}
+}
+
+func TestAnsi256ToRGB(t *testing.T) {
+	tests := []struct {
+		name       string
+		input      int
+		wantR      uint8
+		wantG      uint8
+		wantB      uint8
+	}{
+		{"black", 0, 0, 0, 0},
+		{"white", 15, 255, 255, 255},
+		{"red", 1, 128, 0, 0},
+		{"bright red", 9, 255, 0, 0},
+		{"color cube start", 16, 0, 0, 0},
+		{"grayscale mid", 244, 128, 128, 128},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, g, b := ansi256ToRGB(tt.input)
+			if r != tt.wantR || g != tt.wantG || b != tt.wantB {
+				t.Errorf("ansi256ToRGB(%d) = (%d,%d,%d), want (%d,%d,%d)",
+					tt.input, r, g, b, tt.wantR, tt.wantG, tt.wantB)
+			}
+		})
+	}
+}
+
+func TestHexToRGB(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		wantR uint8
+		wantG uint8
+		wantB uint8
+	}{
+		{"white", "#ffffff", 255, 255, 255},
+		{"black", "#000000", 0, 0, 0},
+		{"red", "#ff0000", 255, 0, 0},
+		{"green", "#00ff00", 0, 255, 0},
+		{"blue", "#0000ff", 0, 0, 255},
+		{"short white", "#fff", 255, 255, 255},
+		{"short black", "#000", 0, 0, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, g, b := hexToRGB(tt.input)
+			if r != tt.wantR || g != tt.wantG || b != tt.wantB {
+				t.Errorf("hexToRGB(%q) = (%d,%d,%d), want (%d,%d,%d)",
+					tt.input, r, g, b, tt.wantR, tt.wantG, tt.wantB)
+			}
+		})
+	}
+}
