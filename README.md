@@ -1,8 +1,8 @@
-# Countdown app
+# Countdown
 
-This simple command line application displays a spinner, a title, and a number which counts down in place by one every second until it reaches the final number (defaults to starting at `100` and ending at `0`).
+A terminal countdown timer with animated spinners.
 
-```plain
+```
 🌙 Liftoff in 99
 ```
 
@@ -22,66 +22,155 @@ go install github.com/OWNER/countdown@latest
 
 ### Binary releases
 
-Download pre-built binaries from the [Releases](https://github.com/OWNER/countdown/releases) page.
+Download pre-built binaries from the [Releases](https://github.com/OWNER/countdown/releases) page for:
+
+- Linux (amd64, arm64)
+- macOS (amd64, arm64)
+- Windows (amd64, arm64)
+
+### Build from source
+
+```sh
+git clone https://github.com/OWNER/countdown.git
+cd countdown
+go build -o countdown .
+```
 
 ## Usage
 
+```sh
+countdown [flags]
 ```
-Usage: countdown [flags]
 
-Display spinner while displaying a number which counts downward
+### Examples
 
-Flags:
-  -h, --help                  Show context-sensitive help.
-  -v, --version               Print the version number
+```sh
+# Default countdown from 100 to 0
+countdown
 
-  -s, --spinner="dot"         Spinner type ($COUNTDOWN_SPINNER)
-                              dot|line|minidot|jump|pulse|points|globe|moon|monkey|meter|hamburger|none
-      --title="Liftoff in"    Text to display to user while counting
-                              ($COUNTDOWN_TITLE)
-  -r, --range="100..0"        Numbers to count from and to
-  -t, --time-interval=1       Number of seconds between each iteration
-  -d, --decrement=1           Number subtracted from current count at
-                              each iteration
-  -f, --final-phase=5         Number at which the final phase starts. At this
-                              number, the foreground and background colors are
-                              swapped. Can be a number such as `5` or a
-                              percentage such as `10%` 
-  
-Style Flags
-  --spinner.foreground="212"    Foreground Color ($COUNTDOWN_FOREGROUND)
-  --spinner.background=""       Background Color ($COUNTDOWN_BACKGROUND)
-  --title.foreground=""         Foreground Color ($COUNTDOWN_FOREGROUND)
-  --title.background=""         Background Color ($COUNTDOWN_BACKGROUND)
-  --padding="0 0"               Padding ($COUNTDOWN_PADDING)
+# Quick 10-second countdown
+countdown -r 10..0
 
+# Countdown with moon spinner
+countdown --spinner moon
+
+# Custom title and range
+countdown --title "Launch in" -r 60..0
+
+# Fast countdown (half-second intervals)
+countdown -r 30..0 -t 0
+
+# Count up instead of down
+countdown -r 0..100
+
+# Decrement by 5 each step
+countdown -r 100..0 -d 5
+
+# Custom colors
+countdown --spinner.foreground 201 --title.foreground 39
+
+# With padding
+countdown --padding "1 2"
 ```
+
+### Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-h, --help` | | Show help |
+| `-v, --version` | | Print version |
+| `-s, --spinner` | `dot` | Spinner animation type |
+| `--title` | `Liftoff in` | Text displayed before the number |
+| `-r, --range` | `100..0` | Start and end numbers (e.g., `10..0` or `0..100`) |
+| `-t, --time-interval` | `1` | Seconds between each tick |
+| `-d, --decrement` | `1` | Amount to change count each tick |
+| `-f, --final-phase` | `5` | Threshold for final phase styling (number or percentage like `10%`) |
+
+### Style Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--spinner.foreground` | `212` | Spinner color (ANSI 0-255 or hex) |
+| `--spinner.background` | | Spinner background color |
+| `--title.foreground` | | Title text color |
+| `--title.background` | | Title background color |
+| `--padding` | `0 0` | Vertical and horizontal padding |
+
+### Spinner Types
+
+| Type | Description |
+|------|-------------|
+| `dot` | Braille dot pattern (default) |
+| `line` | Rotating line `\|/-\` |
+| `minidot` | Small dots |
+| `jump` | Bouncing dot |
+| `pulse` | Pulsing dot |
+| `points` | Expanding points |
+| `globe` | Rotating globe 🌍 |
+| `moon` | Moon phases 🌙 |
+| `monkey` | See no evil monkey 🙈 |
+| `meter` | Progress meter |
+| `hamburger` | Hamburger menu animation |
+| `none` | No spinner |
+
+### Environment Variables
+
+All flags can be set via environment variables:
+
+| Variable | Flag |
+|----------|------|
+| `COUNTDOWN_SPINNER` | `--spinner` |
+| `COUNTDOWN_TITLE` | `--title` |
+| `COUNTDOWN_SPINNER_FOREGROUND` | `--spinner.foreground` |
+| `COUNTDOWN_SPINNER_BACKGROUND` | `--spinner.background` |
+| `COUNTDOWN_TITLE_FOREGROUND` | `--title.foreground` |
+| `COUNTDOWN_TITLE_BACKGROUND` | `--title.background` |
+| `COUNTDOWN_PADDING` | `--padding` |
+
+### Final Phase
+
+When the countdown reaches the final phase threshold, colors are inverted to create visual emphasis. Set with `-f` or `--final-phase`:
+
+- Absolute number: `-f 5` (triggers at 5)
+- Percentage: `-f 10%` (triggers at 10% of total range)
+
+### Controls
+
+- `q`, `Esc`, or `Ctrl+C` to quit early
 
 ## Development
 
-This CLI application is written with [Bubbletea](https://github.com/charmbracelet/bubbletea).
+Built with [Bubbletea](https://github.com/charmbracelet/bubbletea) from Charm.
 
-A Makefile implements many development tasks.
+### Make targets
 
 ```sh
-make test
-
-make install-deps
-
-make format
-
-make snapshot    # Build snapshot release locally
+make build        # Build binary
+make test         # Run tests
+make format       # Format code
+make lint         # Run linter
+make install-deps # Install dev dependencies
+make snapshot     # Build snapshot release locally
+make clean        # Remove build artifacts
 ```
 
 ### Releasing
 
 Releases are automated via GitHub Actions. To create a new release:
 
-1. Tag a commit with a version: `git tag v1.0.0`
+1. Tag a commit: `git tag v1.0.0`
 1. Push the tag: `git push origin v1.0.0`
 
-The workflow builds binaries for Linux, macOS, and Windows (amd64/arm64) and creates a GitHub release.
+The workflow builds binaries for all platforms and creates a GitHub release.
 
 ### Homebrew Tap Setup
 
-To enable Homebrew installation, create a separate repository named `homebrew-tap` and set the `HOMEBREW_TAP_TOKEN` secret in this repository with a GitHub token that has write access to the tap repository. GoReleaser will automatically update the formula on release.
+To enable `brew install`:
+
+1. Create a repository named `homebrew-tap`
+1. Add `HOMEBREW_TAP_TOKEN` secret to this repo (token with write access to tap repo)
+1. GoReleaser updates the formula automatically on release
+
+## License
+
+MIT
