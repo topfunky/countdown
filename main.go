@@ -15,7 +15,7 @@ var version = "dev"
 // CLI defines the command-line interface.
 type CLI struct {
 	Version      bool   `short:"v" help:"Print the version number"`
-	Spinner      string `short:"s" default:"dot" help:"Spinner type" env:"COUNTDOWN_SPINNER" enum:"dot,line,minidot,jump,pulse,points,globe,moon,monkey,meter,hamburger,none"`
+	Spinner      string `short:"s" default:"dot" help:"Spinner type" env:"COUNTDOWN_SPINNER" enum:"dot,line,minidot,jump,pulse,points,globe,moon,monkey,meter,hamburger,bomb,none"`
 	Title        string `default:"Liftoff in" help:"Text to display to user while counting" env:"COUNTDOWN_TITLE"`
 	Range        string `short:"r" default:"100..0" help:"Numbers to count from and to"`
 	TimeInterval int    `short:"t" default:"1" help:"Number of seconds between each iteration"`

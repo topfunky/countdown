@@ -15,6 +15,7 @@ func TestGetSpinner(t *testing.T) {
 		{"dot spinner", "dot", 8},
 		{"line spinner", "line", 4},
 		{"moon spinner", "moon", 8},
+		{"bomb spinner", "bomb", 2},
 		{"none spinner", "none", 1},
 		{"unknown defaults to dot", "unknown", 8},
 	}

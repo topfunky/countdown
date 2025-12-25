@@ -17,6 +17,7 @@ var SpinnerMap = map[string]spinner.Spinner{
 	"monkey":    spinner.Monkey,
 	"meter":     spinner.Meter,
 	"hamburger": spinner.Hamburger,
+	"bomb":      {Frames: []string{"💣", "💥"}, FPS: 3},
 	"none":      {Frames: []string{""}, FPS: 1},
 }
 

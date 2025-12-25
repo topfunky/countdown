@@ -111,6 +111,7 @@ countdown --padding "1 2"
 | `monkey` | See no evil monkey 🙈 |
 | `meter` | Progress meter |
 | `hamburger` | Hamburger menu animation |
+| `bomb` | Bomb and explosion 💣💥 |
 | `none` | No spinner |
 
 ### Environment Variables
