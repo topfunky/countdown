@@ -11,18 +11,18 @@ A terminal countdown timer with animated spinners.
 ### Homebrew (macOS/Linux)
 
 ```sh
-brew install OWNER/tap/countdown
+brew install topfunky/tap/countdown
 ```
 
 ### Go install
 
 ```sh
-go install github.com/OWNER/countdown@latest
+go install github.com/topfunky/countdown@latest
 ```
 
 ### Binary releases
 
-Download pre-built binaries from the [Releases](https://github.com/OWNER/countdown/releases) page for:
+Download pre-built binaries from the [Releases](https://github.com/topfunky/countdown/releases) page for:
 
 - Linux (amd64, arm64)
 - macOS (amd64, arm64)
@@ -31,7 +31,7 @@ Download pre-built binaries from the [Releases](https://github.com/OWNER/countdo
 ### Build from source
 
 ```sh
-git clone https://github.com/OWNER/countdown.git
+git clone https://github.com/topfunky/countdown.git
 cd countdown
 go build -o countdown .
 ```
