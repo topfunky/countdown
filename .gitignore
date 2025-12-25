@@ -6,6 +6,9 @@
 *.so
 *.dylib
 
+# GoReleaser
+dist/
+
 # Test binary
 *.test
 

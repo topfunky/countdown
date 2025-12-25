@@ -3,8 +3,26 @@
 This simple command line application displays a spinner, a title, and a number which counts down in place by one every second until it reaches the final number (defaults to starting at `100` and ending at `0`).
 
 ```plain
-:moon: Liftoff in 99
+🌙 Liftoff in 99
 ```
+
+## Installation
+
+### Homebrew (macOS/Linux)
+
+```sh
+brew install OWNER/tap/countdown
+```
+
+### Go install
+
+```sh
+go install github.com/OWNER/countdown@latest
+```
+
+### Binary releases
+
+Download pre-built binaries from the [Releases](https://github.com/OWNER/countdown/releases) page.
 
 ## Usage
 
@@ -51,4 +69,19 @@ make test
 make install-deps
 
 make format
+
+make snapshot    # Build snapshot release locally
 ```
+
+### Releasing
+
+Releases are automated via GitHub Actions. To create a new release:
+
+1. Tag a commit with a version: `git tag v1.0.0`
+1. Push the tag: `git push origin v1.0.0`
+
+The workflow builds binaries for Linux, macOS, and Windows (amd64/arm64) and creates a GitHub release.
+
+### Homebrew Tap Setup
+
+To enable Homebrew installation, create a separate repository named `homebrew-tap` and set the `HOMEBREW_TAP_TOKEN` secret in this repository with a GitHub token that has write access to the tap repository. GoReleaser will automatically update the formula on release.
