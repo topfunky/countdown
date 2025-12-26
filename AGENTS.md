@@ -9,6 +9,7 @@ Follow best practices that a principal level programmer would use when implement
 - **Tests**: Write tests wherever possible and verify that tests pass before adding new features.
 - **Languages**: Avoid JavaScript/Node.js unless absolutely necessary. Prefer compiled or high-performance tools (Rust, Go, etc.).
 - **Scripts**: Implement scripts in separate files (bash, python, etc.) rather than embedding them as inline strings in YAML/TOML/JSON.
+- **Dependencies**: Use current versions of dependencies, including GitHub Actions. Update dependencies to latest versions when adding or modifying code.
 
 ## Source Control (`jj`)
 
