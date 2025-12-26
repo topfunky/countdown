@@ -151,11 +151,12 @@ func (m Model) View() string {
 	// Build the spinner view
 	spinnerView := m.spinner.View()
 
-	// Build the title
-	titleView := m.titleStyle.Render(m.config.Title)
-
-	// Build the count with potential style swap in final phase
+	// Build the title and count with potential style swap in final phase.
+	//
+	// Add space to title for unbroken display when inverted.
+	titleStr := fmt.Sprintf("%s ", m.config.Title)
 	countStr := strconv.Itoa(m.current)
+	var titleView string
 	var countView string
 	if inFinalPhase {
 		// Final phase: foreground becomes background, text is high-contrast
@@ -178,14 +179,17 @@ func (m Model) View() string {
 
 		// Calculate high-contrast foreground for readability
 		finalStyle = finalStyle.Foreground(highContrastColor(fgColor))
+		finalStyle = finalStyle.Bold(true)
 
+		titleView = finalStyle.Render(titleStr)
 		countView = finalStyle.Render(countStr)
 	} else {
+		titleView = m.titleStyle.Render(titleStr)
 		countView = m.countStyle.Render(countStr)
 	}
 
 	// Combine all parts
-	content := fmt.Sprintf("%s %s %s", spinnerView, titleView, countView)
+	content := fmt.Sprintf("%s %s%s", spinnerView, titleView, countView)
 
 	return m.containerStyle.Render(content)
 }
@@ -227,8 +231,8 @@ func highContrastColor(bgColor string) lipgloss.TerminalColor {
 	r, g, b := colorToRGB(bgColor)
 	luminance := calcLuminance(r, g, b)
 
-	// Use black text on light backgrounds, white on dark
-	if luminance > 0.5 {
+	// Hard code a threshold which works in practice
+	if luminance > 0.4 {
 		return lipgloss.Color("0") // Black
 	}
 	return lipgloss.Color("15") // White
