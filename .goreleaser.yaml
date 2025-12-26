@@ -26,11 +26,7 @@ builds:
 
 archives:
   - id: default
-    format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    format_overrides:
-      - goos: windows
-        format: zip
     files:
       - README.md
       - LICENSE*
@@ -47,18 +43,22 @@ changelog:
       - "^test:"
       - "^chore:"
 
-brews:
+homebrew_casks:
   - name: countdown
     repository:
       owner: "{{ .Env.GITHUB_REPOSITORY_OWNER }}"
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    directory: Formula
     homepage: "https://github.com/{{ .Env.GITHUB_REPOSITORY }}"
     description: "CLI countdown timer with spinner animation"
-    license: "MIT"
-    install: |
-      bin.install "countdown"
-    test: |
-      system "#{bin}/countdown", "--version"
+    url:
+      verified: "github.com/{{ .Env.GITHUB_REPOSITORY }}"
+    binaries:
+      - countdown
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/countdown"]
+          end
     skip_upload: auto
