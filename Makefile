@@ -1,7 +1,7 @@
 .PHONY: build test format lint install-deps clean run snapshot release-local ci-local
 
 # Build the application
-build: clean
+build: clean test
 	go build -o countdown .
 
 # Run tests

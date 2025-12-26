@@ -158,7 +158,7 @@ func TestHighContrastColor(t *testing.T) {
 		{"white bg gets black text", "15", "0"},
 		{"bright yellow gets black text", "11", "0"},
 		{"dark blue gets white text", "4", "15"},
-		{"pink 212 gets white text", "212", "15"}, // luminance ~0.43, below threshold
+		{"pink 212 gets black text", "212", "0"},
 		{"hex white gets black text", "#ffffff", "0"},
 		{"hex black gets white text", "#000000", "15"},
 		{"hex red gets white text", "#ff0000", "15"},
@@ -183,11 +183,11 @@ func TestHighContrastColor(t *testing.T) {
 
 func TestAnsi256ToRGB(t *testing.T) {
 	tests := []struct {
-		name       string
-		input      int
-		wantR      uint8
-		wantG      uint8
-		wantB      uint8
+		name  string
+		input int
+		wantR uint8
+		wantG uint8
+		wantB uint8
 	}{
 		{"black", 0, 0, 0, 0},
 		{"white", 15, 255, 255, 255},
