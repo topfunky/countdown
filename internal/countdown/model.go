@@ -158,7 +158,7 @@ func (m Model) View() string {
 	countStr := strconv.Itoa(m.current)
 	var titleView string
 	var countView string
-	if inFinalPhase {
+	if inFinalPhase && m.current%2 == 1 {
 		// Final phase: foreground becomes background, text is high-contrast
 		finalStyle := lipgloss.NewStyle()
 
