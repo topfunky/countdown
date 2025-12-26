@@ -1,4 +1,7 @@
-.PHONY: build test format lint install-deps clean run snapshot release-local ci-local
+.PHONY: default build test format lint install-deps clean run snapshot release-local ci-local
+
+# Default task
+default: format lint build
 
 # Build the application
 build: clean test
@@ -10,12 +13,12 @@ test: clean
 
 # Format code
 format:
-	go fmt ./...
-	gofumpt -l -w .
+	gofumpt -w .
 
 # Lint code
 lint:
 	golangci-lint run
+	goreleaser check
 
 # Install development dependencies
 install-deps:
@@ -23,6 +26,7 @@ install-deps:
 	go mod tidy
 	go install mvdan.cc/gofumpt@latest
 	go install github.com/goreleaser/goreleaser/v2@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 # Clean build artifacts
 clean:
