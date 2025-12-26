@@ -158,7 +158,14 @@ make clean        # Remove build artifacts
 
 ### Releasing
 
-Releases are automated via GitHub Actions. To create a new release:
+Releases are automated via GitHub Actions. To create a new release, first commit with `jj` and `push` the `main` branch to GitHub.
+
+```sh
+jj bookmark move main --to @-
+jj git push
+```
+
+Then release with `gh`.
 
 ```sh
 gh release create v1.2.3 --title "v1.2.3" --notes "this is a public release"
@@ -171,6 +178,8 @@ gh release create v4.5.6
 ```
 
 The workflow builds binaries for all platforms and creates a GitHub release.
+
+Optionally fetch changes with `jj` to see the new tag on `main`.
 
 ### Homebrew Tap Setup
 
