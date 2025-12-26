@@ -1,4 +1,4 @@
-.PHONY: build test format lint install-deps clean run snapshot release-local
+.PHONY: build test format lint install-deps clean run snapshot release-local ci-local
 
 # Build the application
 build: clean
@@ -41,3 +41,7 @@ snapshot:
 # Build release locally (no publish)
 release-local:
 	goreleaser release --skip=publish --clean
+
+# Run CI locally using act
+ci-local:
+	sudo -i bash -c "cd /home/dev/projects/countdown && act --job lint && act --job test"

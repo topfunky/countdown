@@ -69,7 +69,7 @@ func NewModel(cfg Config) Model {
 	}
 
 	// Count style (same as title by default)
-	countStyle := titleStyle.Copy()
+	countStyle := titleStyle
 
 	// Container style with padding
 	containerStyle := lipgloss.NewStyle().
