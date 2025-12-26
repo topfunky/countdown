@@ -6,7 +6,7 @@ A terminal countdown timer with animated spinners.
 🌙 Liftoff in 99
 ```
 
-## Installation
+## Installation (in development)
 
 ### Homebrew (macOS/Linux)
 
@@ -33,7 +33,8 @@ Download pre-built binaries from the [Releases](https://github.com/topfunky/coun
 ```sh
 git clone https://github.com/topfunky/countdown.git
 cd countdown
-go build -o countdown .
+make install-deps
+make
 ```
 
 ## Usage
@@ -57,8 +58,8 @@ countdown --spinner moon
 # Custom title and range
 countdown --title "Launch in" -r 60..0
 
-# Fast countdown (half-second intervals)
-countdown -r 30..0 -t 0
+# Slow countdown (every five seconds)
+countdown -r 30..0 -t 5
 
 # Count up instead of down
 countdown -r 0..100
@@ -132,7 +133,7 @@ All flags can be set via environment variables:
 
 When the countdown reaches the final phase threshold, colors are inverted to create visual emphasis. Set with `-f` or `--final-phase`:
 
-- Absolute number: `-f 5` (triggers at 5)
+- Absolute number: `-f 5` (triggers at 5, the default)
 - Percentage: `-f 10%` (triggers at 10% of total range)
 
 ### Controls
@@ -159,8 +160,15 @@ make clean        # Remove build artifacts
 
 Releases are automated via GitHub Actions. To create a new release:
 
-1. Tag a commit: `git tag v1.0.0`
-1. Push the tag: `git push origin v1.0.0`
+```sh
+gh release create v1.2.3 --title "v1.2.3" --notes "this is a public release"
+```
+
+Or use the short version, with interactive prompts.
+
+```sh
+gh release create v4.5.6
+```
 
 The workflow builds binaries for all platforms and creates a GitHub release.
 
