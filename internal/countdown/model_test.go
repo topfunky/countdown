@@ -1,6 +1,7 @@
 package countdown
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/charmbracelet/lipgloss"
@@ -144,6 +145,30 @@ func TestModelView(t *testing.T) {
 	view = m.View()
 	if view != "" {
 		t.Errorf("View() should return empty string when done, got %q", view)
+	}
+}
+
+func TestModelViewWithKilled(t *testing.T) {
+	cfg := Config{
+		SpinnerType:  "none",
+		Title:        "Test",
+		Start:        10,
+		End:          0,
+		TimeInterval: 1,
+		Decrement:    1,
+		FinalPhase:   2,
+	}
+
+	m := NewModel(cfg)
+	m.killed = true
+
+	// View should contain "(killed)" when killed
+	view := m.View()
+	if view == "" {
+		t.Error("View() should not return empty string when not done")
+	}
+	if !strings.Contains(view, "(killed)") {
+		t.Errorf("View() should contain '(killed)' when killed, got %q", view)
 	}
 }
 

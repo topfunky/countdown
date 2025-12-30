@@ -3,8 +3,11 @@ package countdown
 import (
 	"fmt"
 	"math"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -35,6 +38,7 @@ type Model struct {
 	spinner        spinner.Model
 	current        int
 	done           bool
+	killed         bool
 	spinnerStyle   lipgloss.Style
 	titleStyle     lipgloss.Style
 	countStyle     lipgloss.Style
@@ -43,6 +47,9 @@ type Model struct {
 
 // tickMsg is sent when the countdown should decrement.
 type tickMsg struct{}
+
+// shutdownMsg is sent when the OS is shutting down.
+type shutdownMsg struct{}
 
 // NewModel creates a new countdown model.
 func NewModel(cfg Config) Model {
@@ -82,6 +89,7 @@ func NewModel(cfg Config) Model {
 		config:         cfg,
 		spinner:        s,
 		current:        cfg.Start,
+		killed:         false,
 		spinnerStyle:   spinnerStyle,
 		titleStyle:     titleStyle,
 		countStyle:     countStyle,
@@ -130,6 +138,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, tick(m.config.TimeInterval)
 
+	case shutdownMsg:
+		m.killed = true
+		return m, nil
+
 	case spinner.TickMsg:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
@@ -155,6 +167,9 @@ func (m Model) View() string {
 	//
 	// Add space to title for unbroken display when inverted.
 	titleStr := fmt.Sprintf("%s ", m.config.Title)
+	if m.killed {
+		titleStr += "(killed) "
+	}
 	countStr := strconv.Itoa(m.current)
 	var titleView string
 	var countView string
@@ -348,6 +363,16 @@ func calcLuminance(r, g, b uint8) float64 {
 // Run starts the countdown application.
 func Run(cfg Config) error {
 	p := tea.NewProgram(NewModel(cfg))
+
+	// Set up signal handling for OS shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		<-sigChan
+		p.Send(shutdownMsg{})
+	}()
+
 	_, err := p.Run()
 	return err
 }
