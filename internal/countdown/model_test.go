@@ -1,17 +1,19 @@
 package countdown
 
 import (
-	"strings"
+	"fmt"
 	"testing"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetSpinner(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
-		wantLen int // expected number of frames
+		wantLen int
 	}{
 		{"dot spinner", "dot", 8},
 		{"line spinner", "line", 4},
@@ -24,9 +26,7 @@ func TestGetSpinner(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := GetSpinner(tt.input)
-			if len(s.Frames) != tt.wantLen {
-				t.Errorf("GetSpinner(%q) has %d frames, want %d", tt.input, len(s.Frames), tt.wantLen)
-			}
+			assert.Equal(t, tt.wantLen, len(s.Frames), fmt.Sprintf("Spinner %s", tt.name))
 		})
 	}
 }
@@ -47,15 +47,9 @@ func TestNewModel(t *testing.T) {
 
 	m := NewModel(cfg)
 
-	if m.current != cfg.Start {
-		t.Errorf("NewModel current = %d, want %d", m.current, cfg.Start)
-	}
-	if m.done {
-		t.Error("NewModel should not be done initially")
-	}
-	if m.config.Title != cfg.Title {
-		t.Errorf("NewModel title = %q, want %q", m.config.Title, cfg.Title)
-	}
+	assert.Equal(t, cfg.Start, m.current)
+	assert.False(t, m.done)
+	assert.Equal(t, cfg.Title, m.config.Title)
 }
 
 func TestModelIsInFinalPhase(t *testing.T) {
@@ -85,9 +79,7 @@ func TestModelIsInFinalPhase(t *testing.T) {
 				current: tt.current,
 			}
 
-			if got := m.isInFinalPhase(); got != tt.want {
-				t.Errorf("isInFinalPhase() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, m.isInFinalPhase())
 		})
 	}
 }
@@ -106,16 +98,11 @@ func TestParseColor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := parseColor(tt.input)
-			// For NoColor, check type
 			if tt.input == "" {
-				if _, ok := got.(lipgloss.NoColor); !ok {
-					t.Errorf("parseColor(%q) should return NoColor", tt.input)
-				}
-				return
-			}
-			// For Color, compare string representation
-			if got != tt.want {
-				t.Errorf("parseColor(%q) = %v, want %v", tt.input, got, tt.want)
+				_, ok := got.(lipgloss.NoColor)
+				assert.True(t, ok, "parseColor should return NoColor for empty string")
+			} else {
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}
@@ -134,18 +121,12 @@ func TestModelView(t *testing.T) {
 
 	m := NewModel(cfg)
 
-	// View should contain the title and current count
 	view := m.View()
-	if view == "" {
-		t.Error("View() should not return empty string when not done")
-	}
+	assert.NotEmpty(t, view, "View() should not return empty string when not done")
 
-	// When done, view should be empty
 	m.done = true
 	view = m.View()
-	if view != "" {
-		t.Errorf("View() should return empty string when done, got %q", view)
-	}
+	assert.Empty(t, view, "View() should return empty string when done")
 }
 
 func TestModelViewWithKilled(t *testing.T) {
@@ -162,21 +143,16 @@ func TestModelViewWithKilled(t *testing.T) {
 	m := NewModel(cfg)
 	m.killed = true
 
-	// View should contain "(killed)" when killed
 	view := m.View()
-	if view == "" {
-		t.Error("View() should not return empty string when not done")
-	}
-	if !strings.Contains(view, "(killed)") {
-		t.Errorf("View() should contain '(killed)' when killed, got %q", view)
-	}
+	assert.NotEmpty(t, view)
+	assert.Contains(t, view, "(killed)")
 }
 
 func TestHighContrastColor(t *testing.T) {
 	tests := []struct {
 		name    string
 		bgColor string
-		want    string // "0" for black, "15" for white
+		want    string
 	}{
 		{"empty defaults to white text", "", "15"},
 		{"black bg gets white text", "0", "15"},
@@ -195,13 +171,8 @@ func TestHighContrastColor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := highContrastColor(tt.bgColor)
 			gotColor, ok := got.(lipgloss.Color)
-			if !ok {
-				t.Errorf("highContrastColor(%q) did not return lipgloss.Color", tt.bgColor)
-				return
-			}
-			if string(gotColor) != tt.want {
-				t.Errorf("highContrastColor(%q) = %q, want %q", tt.bgColor, gotColor, tt.want)
-			}
+			require.True(t, ok, "highContrastColor should return lipgloss.Color")
+			assert.Equal(t, tt.want, string(gotColor))
 		})
 	}
 }
@@ -225,10 +196,9 @@ func TestAnsi256ToRGB(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r, g, b := ansi256ToRGB(tt.input)
-			if r != tt.wantR || g != tt.wantG || b != tt.wantB {
-				t.Errorf("ansi256ToRGB(%d) = (%d,%d,%d), want (%d,%d,%d)",
-					tt.input, r, g, b, tt.wantR, tt.wantG, tt.wantB)
-			}
+			assert.Equal(t, tt.wantR, r)
+			assert.Equal(t, tt.wantG, g)
+			assert.Equal(t, tt.wantB, b)
 		})
 	}
 }
@@ -253,10 +223,9 @@ func TestHexToRGB(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r, g, b := hexToRGB(tt.input)
-			if r != tt.wantR || g != tt.wantG || b != tt.wantB {
-				t.Errorf("hexToRGB(%q) = (%d,%d,%d), want (%d,%d,%d)",
-					tt.input, r, g, b, tt.wantR, tt.wantG, tt.wantB)
-			}
+			assert.Equal(t, tt.wantR, r)
+			assert.Equal(t, tt.wantG, g)
+			assert.Equal(t, tt.wantB, b)
 		})
 	}
 }

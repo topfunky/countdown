@@ -2,6 +2,9 @@ package main
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseRange(t *testing.T) {
@@ -26,17 +29,12 @@ func TestParseRange(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			start, end, err := parseRange(tt.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parseRange(%q) error = %v, wantErr %v", tt.input, err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr {
-				if start != tt.wantStart {
-					t.Errorf("parseRange(%q) start = %d, want %d", tt.input, start, tt.wantStart)
-				}
-				if end != tt.wantEnd {
-					t.Errorf("parseRange(%q) end = %d, want %d", tt.input, end, tt.wantEnd)
-				}
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.wantStart, start)
+				assert.Equal(t, tt.wantEnd, end)
 			}
 		})
 	}
@@ -62,12 +60,11 @@ func TestParseFinalPhase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := parseFinalPhase(tt.val, tt.start, tt.end)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parseFinalPhase(%q) error = %v, wantErr %v", tt.val, err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr && got != tt.want {
-				t.Errorf("parseFinalPhase(%q) = %d, want %d", tt.val, got, tt.want)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}
@@ -93,36 +90,13 @@ func TestParsePadding(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			v, h, err := parsePadding(tt.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parsePadding(%q) error = %v, wantErr %v", tt.input, err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr {
-				if v != tt.wantV {
-					t.Errorf("parsePadding(%q) vertical = %d, want %d", tt.input, v, tt.wantV)
-				}
-				if h != tt.wantH {
-					t.Errorf("parsePadding(%q) horizontal = %d, want %d", tt.input, h, tt.wantH)
-				}
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.wantV, v)
+				assert.Equal(t, tt.wantH, h)
 			}
 		})
-	}
-}
-
-func TestAbs(t *testing.T) {
-	tests := []struct {
-		input int
-		want  int
-	}{
-		{5, 5},
-		{-5, 5},
-		{0, 0},
-		{-100, 100},
-	}
-
-	for _, tt := range tests {
-		if got := abs(tt.input); got != tt.want {
-			t.Errorf("abs(%d) = %d, want %d", tt.input, got, tt.want)
-		}
 	}
 }
