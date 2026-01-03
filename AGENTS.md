@@ -11,19 +11,9 @@ Follow best practices that a principal level programmer would use when implement
 - **Scripts**: Implement scripts in separate files (bash, python, etc.) rather than embedding them as inline strings in YAML/TOML/JSON.
 - **Dependencies**: Use current versions of dependencies, including GitHub Actions. Update dependencies to latest versions when adding or modifying code.
 
-## Source Control (`jj`)
+## Version Control
 
-- Use `jj` exclusively for version control.
-- **Initialization**: If the current repo is a git repo but not a jj project, initialize it with `jj git init` before any version control operations. This ensures no git commands will ever be run.
-- **Confirmation**: Show changed files and stats (e.g. `jj diff --stat`) and ALWAYS ask the user for confirmation before creating a commit.
-- **Commit**: `jj commit -m "type(scope): description"` (Atomic: describes current change and creates new one)
-- **Sync**: NEVER sync with remote repository. Allow the user to sync manually outside of the agent.
-
-## Commits
-
-- **Style**: Conventional Commits.
-- **Types**: `feat`, `fix`, `docs`, `chore`, `refactor`.
-- **Format**: `type(scope): concise imperative description`.
+See [`.ai/agents/VERSION_CONTROL.md`](.ai/agents/VERSION_CONTROL.md) for comprehensive version control guidelines using Jujutsu (jj).
 
 ## Documentation
 
