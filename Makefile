@@ -1,11 +1,14 @@
 .PHONY: default build test format lint install-deps clean run snapshot release-local ci-local
 
+VERSION := $(shell git describe --tags --always)
+LDFLAGS := -X 'main.version=$(VERSION)'
+
 # Default task
 default: format lint build
 
 # Build the application
 build: clean test
-	go build -o countdown .
+	go build -ldflags "$(LDFLAGS)" -o countdown .
 
 # Run tests
 test: clean

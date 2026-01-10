@@ -2,6 +2,8 @@
 
 A terminal countdown timer with animated spinners.
 
+![Screen recording of liftoff](https://vhs.charm.sh/vhs-22kW7Is8pCwf5CXnk3oMLE.gif)
+
 ```
 🌙 Liftoff in 99
 ```
@@ -181,13 +183,11 @@ The workflow builds binaries for all platforms and creates a GitHub release.
 
 Optionally fetch changes with `jj` to see the new tag on `main`.
 
-### Homebrew Tap Setup
+### Record demo video with VHS
 
-To enable `brew install`:
-
-1. Create a repository named `homebrew-tap`
-1. Add `HOMEBREW_TAP_TOKEN` secret to this repo (token with write access to tap repo)
-1. GoReleaser updates the formula automatically on release
+```nushell
+docker run --rm -v ($env.PWD):/vhs ghcr.io/charmbracelet/vhs vhs/basic.tape
+```
 
 ## License
 
