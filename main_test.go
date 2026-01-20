@@ -1,8 +1,10 @@
 package main
 
 import (
+	"os"
 	"testing"
 
+	"github.com/alecthomas/kong"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -96,6 +98,48 @@ func TestParsePadding(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, tt.wantV, v)
 				assert.Equal(t, tt.wantH, h)
+			}
+		})
+	}
+}
+
+func TestCLIBigFlag(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		wantBig  bool
+		wantErr  bool
+	}{
+		{"big flag short", []string{"-b"}, true, false},
+		{"big flag long", []string{"--big"}, true, false},
+		{"big flag with range", []string{"-b", "-r", "10..0"}, true, false},
+		{"no big flag", []string{"-r", "10..0"}, false, false},
+		{"big flag with other options", []string{"-b", "-s", "dot", "-r", "5..0"}, true, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Save original args
+			oldArgs := os.Args
+			defer func() { os.Args = oldArgs }()
+
+			// Set up test args
+			os.Args = append([]string{"countdown"}, tt.args...)
+
+			var cli CLI
+			parser, err := kong.New(&cli,
+				kong.Name("countdown"),
+				kong.Description("Display spinner while displaying a number which counts downward"),
+				kong.UsageOnError(),
+			)
+			require.NoError(t, err, "kong.New should not error")
+
+			_, err = parser.Parse(tt.args)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.wantBig, cli.Big, "Big flag should match expected value")
 			}
 		})
 	}

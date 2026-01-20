@@ -21,6 +21,7 @@ type CLI struct {
 	TimeInterval int    `short:"t" default:"1" help:"Number of seconds between each iteration"`
 	Decrement    int    `short:"d" default:"1" help:"Number subtracted from current count at each iteration"`
 	FinalPhase   string `short:"f" default:"5" help:"Number at which the final phase starts. At this number, the foreground and background colors are swapped. Can be a number such as '5' or a percentage such as '10%'"`
+	Big          bool   `short:"b" help:"Display numbers using large ASCII art digits"`
 
 	SpinnerStyle SpinnerStyle `embed:"" prefix:"spinner."`
 	TitleStyle   TitleStyle   `embed:"" prefix:"title."`
@@ -84,6 +85,7 @@ func main() {
 		TitleBackground:   cli.TitleStyle.Background,
 		PaddingVertical:   padV,
 		PaddingHorizontal: padH,
+		Big:               cli.Big,
 	}
 
 	if err := countdown.Run(config); err != nil {
