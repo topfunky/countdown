@@ -263,10 +263,10 @@ func (m Model) View() string {
 	if m.killed {
 		titleStr += "(killed) "
 	}
-	
+
 	var titleView string
 	var countView string
-	
+
 	if m.config.Big {
 		// Render big ASCII art numbers
 		bigNumStr := renderBigNumber(m.current)
@@ -299,12 +299,12 @@ func (m Model) View() string {
 			titleView = m.titleStyle.Render(titleStr)
 			countView = m.countStyle.Render(bigNumStr)
 		}
-		
+
 		// For big numbers, render title and number on separate lines
 		content := fmt.Sprintf("%s %s\n%s", spinnerView, titleView, countView)
 		return m.containerStyle.Render(content)
 	}
-	
+
 	// Regular number rendering
 	countStr := strconv.Itoa(m.current)
 	if inFinalPhase && m.current%2 == 1 {
@@ -513,7 +513,7 @@ func renderBigNumber(num int) string {
 	var result strings.Builder
 	for _, line := range lines {
 		if len(line) > 0 {
-			result.WriteString(strings.Join(line, " "))
+			result.WriteString(strings.Join(line, ""))
 			result.WriteString("\n")
 		}
 	}
