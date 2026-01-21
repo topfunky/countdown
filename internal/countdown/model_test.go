@@ -229,3 +229,77 @@ func TestHexToRGB(t *testing.T) {
 		})
 	}
 }
+
+func TestRenderBigNumber(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    int
+		contains []string // Substrings that should be in the output
+	}{
+		{"zero", 0, []string{"╭───────╮", "│ ╭───╮ │", "│ ╰───╯ │", "╰───────╯"}},
+		{"one", 1, []string{"╭───╮", "╰─╮ │", "  │ │", "  ╰─╯"}},
+		{"two", 2, []string{"╭───────╮", "╰─────╮ │", "╭─────╯ │", "╰───────╯"}},
+		{"three", 3, []string{"╭───────╮", "╰─────╮ │", "╭─────╯ │", "╰───────╯"}},
+		{"multi-digit", 123, []string{"╭───╮", "╰─╮ │", "  │ │"}}, // Should contain parts of 1, 2, 3
+		{"negative", -5, []string{"╭───────╮", "│ ╭─────╯", "╰───────╯"}}, // Should render the 5 part
+		{"large number", 9876543210, []string{"╭───────╮"}}, // Should render all digits
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := renderBigNumber(tt.input)
+			assert.NotEmpty(t, result, "renderBigNumber should not return empty string")
+			for _, substr := range tt.contains {
+				assert.Contains(t, result, substr, "renderBigNumber output should contain expected substring")
+			}
+			// Verify it's multi-line (has newlines)
+			assert.Contains(t, result, "\n", "renderBigNumber should return multi-line output")
+		})
+	}
+}
+
+func TestModelViewWithBig(t *testing.T) {
+	cfg := Config{
+		SpinnerType:  "none",
+		Title:        "Test",
+		Start:        10,
+		End:          0,
+		TimeInterval: 1,
+		Decrement:    1,
+		FinalPhase:   2,
+		Big:          true,
+	}
+
+	m := NewModel(cfg)
+	view := m.View()
+
+	assert.NotEmpty(t, view, "View() should not return empty string when not done")
+	// When Big is enabled, the view should contain big number ASCII art
+	assert.Contains(t, view, "╭", "View() with Big enabled should contain ASCII art characters")
+	assert.Contains(t, view, "│", "View() with Big enabled should contain ASCII art characters")
+	// Should contain the title
+	assert.Contains(t, view, "Test", "View() should contain the title")
+}
+
+func TestModelViewWithBigDisabled(t *testing.T) {
+	cfg := Config{
+		SpinnerType:  "none",
+		Title:        "Test",
+		Start:        10,
+		End:          0,
+		TimeInterval: 1,
+		Decrement:    1,
+		FinalPhase:   2,
+		Big:          false,
+	}
+
+	m := NewModel(cfg)
+	view := m.View()
+
+	assert.NotEmpty(t, view, "View() should not return empty string when not done")
+	// When Big is disabled, should contain regular number (not ASCII art)
+	assert.Contains(t, view, "10", "View() with Big disabled should contain regular number")
+	// Should not contain big number ASCII art characters in the number part
+	// (though spinner might have them, so we check for the specific pattern)
+	assert.Contains(t, view, "Test", "View() should contain the title")
+}

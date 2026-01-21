@@ -1,11 +1,11 @@
 # Configuration
 
-Output vhs/basic.gif
+Output vhs/big.gif
 
 Set Shell "bash"
 Set FontSize 32
 Set Width 1200
-Set Height 300
+Set Height 500
 
 Env PATH "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/vhs"
 
@@ -22,7 +22,5 @@ Show
 
 # Script for recording
 
-Type './countdown --spinner "bomb" --range "10..0" \' 
-Enter
-Type '  --title "Implosion in"' Sleep 1s
+Type './countdown --big --range 10..0 --spinner="bomb"' Sleep 1s
 Enter Sleep 14s

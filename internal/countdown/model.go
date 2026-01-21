@@ -15,6 +15,98 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// bigDigits contains ASCII art representations of digits 0-9 and colon.
+var bigDigits = map[rune][]string{
+	'0': {
+		"╭───────╮",
+		"│ ╭───╮ │",
+		"│ │   │ │",
+		"│ │   │ │",
+		"│ ╰───╯ │",
+		"╰───────╯",
+	},
+	'1': {
+		"╭───╮",
+		"╰─╮ │",
+		"  │ │",
+		"  │ │",
+		"  │ │",
+		"  ╰─╯",
+	},
+	'2': {
+		"╭───────╮",
+		"╰─────╮ │",
+		"╭─────╯ │",
+		"│ ╭─────╯",
+		"│ ╰─────╮",
+		"╰───────╯",
+	},
+	'3': {
+		"╭───────╮",
+		"╰─────╮ │",
+		"╭─────╯ │",
+		"╰─────╮ │",
+		"╭─────╯ │",
+		"╰───────╯",
+	},
+	'4': {
+		"╭─╮  ╭─╮",
+		"│ │  │ │",
+		"│ ╰──╯ │",
+		"╰────╮ │",
+		"     │ │",
+		"     ╰─╯",
+	},
+	'5': {
+		"╭───────╮",
+		"│ ╭─────╯",
+		"│ ╰─────╮",
+		"╰─────╮ │",
+		"╭─────╯ │",
+		"╰───────╯",
+	},
+	'6': {
+		"╭───────╮",
+		"│ ╭─────╯",
+		"│ ╰─────╮",
+		"│ ╭───╮ │",
+		"│ ╰───╯ │",
+		"╰───────╯",
+	},
+	'7': {
+		"╭─────╮",
+		"╰───╮ │",
+		"    │ │",
+		"    │ │",
+		"    │ │",
+		"    ╰─╯",
+	},
+	'8': {
+		"╭───────╮",
+		"│ ╭───╮ │",
+		"│ ╰───╯ │",
+		"│ ╭───╮ │",
+		"│ ╰───╯ │",
+		"╰───────╯",
+	},
+	'9': {
+		"╭───────╮",
+		"│ ╭───╮ │",
+		"│ ╰───╯ │",
+		"╰─────╮ │",
+		"╭─────╯ │",
+		"╰───────╯",
+	},
+	':': {
+		"   ",
+		"╭─╮",
+		"╰─╯",
+		"╭─╮",
+		"╰─╯",
+		"   ",
+	},
+}
+
 // Config holds the countdown configuration.
 type Config struct {
 	SpinnerType       string
@@ -30,6 +122,7 @@ type Config struct {
 	TitleBackground   string
 	PaddingVertical   int
 	PaddingHorizontal int
+	Big               bool
 }
 
 // Model represents the Bubbletea model for the countdown.
@@ -170,9 +263,52 @@ func (m Model) View() string {
 	if m.killed {
 		titleStr += "(killed) "
 	}
-	countStr := strconv.Itoa(m.current)
+
 	var titleView string
 	var countView string
+
+	if m.config.Big {
+		// Render big ASCII art numbers
+		bigNumStr := renderBigNumber(m.current)
+		titleView = m.titleStyle.Render(titleStr)
+		
+		if inFinalPhase && m.current%2 == 1 {
+			// Final phase: foreground becomes background, text is high-contrast
+			finalStyle := lipgloss.NewStyle()
+
+			// Determine the foreground color to use as background
+			fgColor := m.config.SpinnerForeground // Default foreground
+			if m.config.TitleForeground != "" {
+				fgColor = m.config.TitleForeground
+			}
+
+			// Set the original foreground as the new background
+			if fgColor != "" {
+				finalStyle = finalStyle.Background(parseColor(fgColor))
+			} else {
+				// Use default spinner color (212) as background
+				fgColor = "212"
+				finalStyle = finalStyle.Background(parseColor(fgColor))
+			}
+
+			// Calculate high-contrast foreground for readability
+			finalStyle = finalStyle.Foreground(highContrastColor(fgColor))
+			finalStyle = finalStyle.Bold(true)
+
+			countView = finalStyle.Render(bigNumStr)
+		} else {
+			countView = m.countStyle.Render(bigNumStr)
+		}
+
+		// For big numbers, render title and number on separate lines
+		content := fmt.Sprintf("%s %s\n%s", spinnerView, titleView, countView)
+		return m.containerStyle.Render(content)
+	}
+
+	// Regular number rendering
+	countStr := strconv.Itoa(m.current)
+	titleView = m.titleStyle.Render(titleStr)
+	
 	if inFinalPhase && m.current%2 == 1 {
 		// Final phase: foreground becomes background, text is high-contrast
 		finalStyle := lipgloss.NewStyle()
@@ -196,10 +332,8 @@ func (m Model) View() string {
 		finalStyle = finalStyle.Foreground(highContrastColor(fgColor))
 		finalStyle = finalStyle.Bold(true)
 
-		titleView = finalStyle.Render(titleStr)
 		countView = finalStyle.Render(countStr)
 	} else {
-		titleView = m.titleStyle.Render(titleStr)
 		countView = m.countStyle.Render(countStr)
 	}
 
@@ -358,6 +492,32 @@ func calcLuminance(r, g, b uint8) float64 {
 
 	// Calculate luminance (ITU-R BT.709)
 	return 0.2126*rLin + 0.7152*gLin + 0.0722*bLin
+}
+
+// renderBigNumber renders a number as large ASCII art digits.
+func renderBigNumber(num int) string {
+	numStr := strconv.Itoa(num)
+	lines := make([][]string, 6)
+	for i := range lines {
+		lines[i] = make([]string, 0)
+	}
+
+	for _, char := range numStr {
+		if digit, ok := bigDigits[char]; ok {
+			for i, line := range digit {
+				lines[i] = append(lines[i], line)
+			}
+		}
+	}
+
+	var result strings.Builder
+	for _, line := range lines {
+		if len(line) > 0 {
+			result.WriteString(strings.Join(line, ""))
+			result.WriteString("\n")
+		}
+	}
+	return strings.TrimRight(result.String(), "\n")
 }
 
 // Run starts the countdown application.

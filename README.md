@@ -8,6 +8,10 @@ A terminal countdown timer with animated spinners.
 🌙 Liftoff in 99
 ```
 
+Includes an option to render big numbers.
+
+![Screen recording of big numbers](https://vhs.charm.sh/vhs-3UPyKQ0dKOOUpwHoBVW678.gif)
+
 ## Installation (in development)
 
 ### Homebrew (macOS/Linux)
@@ -74,6 +78,9 @@ countdown --spinner.foreground 201 --title.foreground 39
 
 # With padding
 countdown --padding "1 2"
+
+# Big ASCII art numbers
+countdown -b -r 10..0
 ```
 
 ### Flags
@@ -88,6 +95,7 @@ countdown --padding "1 2"
 | `-t, --time-interval` | `1` | Seconds between each tick |
 | `-d, --decrement` | `1` | Amount to change count each tick |
 | `-f, --final-phase` | `5` | Threshold for final phase styling (number or percentage like `10%`) |
+| `-b, --big` | `false` | Display numbers using large ASCII art digits |
 
 ### Style Flags
 
@@ -119,7 +127,7 @@ countdown --padding "1 2"
 
 ### Environment Variables
 
-All flags can be set via environment variables:
+Some flags can be set via environment variables:
 
 | Variable | Flag |
 |----------|------|
@@ -187,6 +195,11 @@ Optionally fetch changes with `jj` to see the new tag on `main`.
 
 ```nushell
 docker run --rm -v ($env.PWD):/vhs ghcr.io/charmbracelet/vhs vhs/basic.tape
+```
+Or with custom Dockerfile (installs `go` for building the binary dynamically):
+
+```nushell
+docker run --rm -v ($env.PWD):/vhs (docker build -q /vhs) vhs/big.tape
 ```
 
 ## License
