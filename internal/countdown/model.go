@@ -270,6 +270,8 @@ func (m Model) View() string {
 	if m.config.Big {
 		// Render big ASCII art numbers
 		bigNumStr := renderBigNumber(m.current)
+		titleView = m.titleStyle.Render(titleStr)
+		
 		if inFinalPhase && m.current%2 == 1 {
 			// Final phase: foreground becomes background, text is high-contrast
 			finalStyle := lipgloss.NewStyle()
@@ -293,10 +295,8 @@ func (m Model) View() string {
 			finalStyle = finalStyle.Foreground(highContrastColor(fgColor))
 			finalStyle = finalStyle.Bold(true)
 
-			titleView = finalStyle.Render(titleStr)
 			countView = finalStyle.Render(bigNumStr)
 		} else {
-			titleView = m.titleStyle.Render(titleStr)
 			countView = m.countStyle.Render(bigNumStr)
 		}
 
@@ -307,6 +307,8 @@ func (m Model) View() string {
 
 	// Regular number rendering
 	countStr := strconv.Itoa(m.current)
+	titleView = m.titleStyle.Render(titleStr)
+	
 	if inFinalPhase && m.current%2 == 1 {
 		// Final phase: foreground becomes background, text is high-contrast
 		finalStyle := lipgloss.NewStyle()
@@ -330,10 +332,8 @@ func (m Model) View() string {
 		finalStyle = finalStyle.Foreground(highContrastColor(fgColor))
 		finalStyle = finalStyle.Bold(true)
 
-		titleView = finalStyle.Render(titleStr)
 		countView = finalStyle.Render(countStr)
 	} else {
-		titleView = m.titleStyle.Render(titleStr)
 		countView = m.countStyle.Render(countStr)
 	}
 
