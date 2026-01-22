@@ -1,4 +1,4 @@
-.PHONY: default build test format lint install-deps clean run snapshot release-local ci-local
+.PHONY: default build test format lint install-deps clean run snapshot release-local ci-local gifs
 
 VERSION := $(shell git describe --tags --always)
 LDFLAGS := -X 'main.version=$(VERSION)'
@@ -52,3 +52,13 @@ release-local:
 # Run CI locally using act
 ci-local:
 	sudo -i bash -c "cd /home/dev/projects/countdown && act --job lint && act --job test"
+
+# Generate GIFs from VHS tape files
+TAPES := $(wildcard vhs/*.tape)
+GIFS := $(TAPES:.tape=.gif)
+
+gifs: $(GIFS)
+
+vhs/%.gif: vhs/%.tape
+	@echo "Generating GIF from $<..."
+	docker run --rm -v $$(pwd):/vhs $$(docker build -q vhs) $<
