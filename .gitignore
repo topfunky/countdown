@@ -31,3 +31,6 @@ Thumbs.db
 
 # Assets
 vhs/*.gif
+
+# Coding agents
+plans/*
