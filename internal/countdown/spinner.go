@@ -3,7 +3,7 @@ package countdown
 import (
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
+	"charm.land/bubbles/v2/spinner"
 )
 
 // SpinnerMap maps spinner names to their configurations.

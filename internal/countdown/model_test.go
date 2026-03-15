@@ -2,11 +2,11 @@ package countdown
 
 import (
 	"fmt"
+	"image/color"
 	"testing"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGetSpinner(t *testing.T) {
@@ -88,7 +88,7 @@ func TestParseColor(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
-		want  lipgloss.TerminalColor
+		want  color.Color
 	}{
 		{"empty string", "", lipgloss.NoColor{}},
 		{"ansi number", "212", lipgloss.Color("212")},
@@ -98,12 +98,7 @@ func TestParseColor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := parseColor(tt.input)
-			if tt.input == "" {
-				_, ok := got.(lipgloss.NoColor)
-				assert.True(t, ok, "parseColor should return NoColor for empty string")
-			} else {
-				assert.Equal(t, tt.want, got)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -122,11 +117,11 @@ func TestModelView(t *testing.T) {
 	m := NewModel(cfg)
 
 	view := m.View()
-	assert.NotEmpty(t, view, "View() should not return empty string when not done")
+	assert.NotEmpty(t, view.Content, "View() should not return empty string when not done")
 
 	m.done = true
 	view = m.View()
-	assert.Empty(t, view, "View() should return empty string when done")
+	assert.Empty(t, view.Content, "View() should return empty string when done")
 }
 
 func TestModelViewWithKilled(t *testing.T) {
@@ -144,8 +139,8 @@ func TestModelViewWithKilled(t *testing.T) {
 	m.killed = true
 
 	view := m.View()
-	assert.NotEmpty(t, view)
-	assert.Contains(t, view, "(killed)")
+	assert.NotEmpty(t, view.Content)
+	assert.Contains(t, view.Content, "(killed)")
 }
 
 func TestHighContrastColor(t *testing.T) {
@@ -170,9 +165,8 @@ func TestHighContrastColor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := highContrastColor(tt.bgColor)
-			gotColor, ok := got.(lipgloss.Color)
-			require.True(t, ok, "highContrastColor should return lipgloss.Color")
-			assert.Equal(t, tt.want, string(gotColor))
+			expected := lipgloss.Color(tt.want)
+			assert.Equal(t, expected, got)
 		})
 	}
 }
@@ -273,12 +267,12 @@ func TestModelViewWithBig(t *testing.T) {
 	m := NewModel(cfg)
 	view := m.View()
 
-	assert.NotEmpty(t, view, "View() should not return empty string when not done")
+	assert.NotEmpty(t, view.Content, "View() should not return empty string when not done")
 	// When Big is enabled, the view should contain big number ASCII art
-	assert.Contains(t, view, "╭", "View() with Big enabled should contain ASCII art characters")
-	assert.Contains(t, view, "│", "View() with Big enabled should contain ASCII art characters")
+	assert.Contains(t, view.Content, "╭", "View() with Big enabled should contain ASCII art characters")
+	assert.Contains(t, view.Content, "│", "View() with Big enabled should contain ASCII art characters")
 	// Should contain the title
-	assert.Contains(t, view, "Test", "View() should contain the title")
+	assert.Contains(t, view.Content, "Test", "View() should contain the title")
 }
 
 func TestModelViewWithBigDisabled(t *testing.T) {
@@ -296,10 +290,10 @@ func TestModelViewWithBigDisabled(t *testing.T) {
 	m := NewModel(cfg)
 	view := m.View()
 
-	assert.NotEmpty(t, view, "View() should not return empty string when not done")
+	assert.NotEmpty(t, view.Content, "View() should not return empty string when not done")
 	// When Big is disabled, should contain regular number (not ASCII art)
-	assert.Contains(t, view, "10", "View() with Big disabled should contain regular number")
+	assert.Contains(t, view.Content, "10", "View() with Big disabled should contain regular number")
 	// Should not contain big number ASCII art characters in the number part
 	// (though spinner might have them, so we check for the specific pattern)
-	assert.Contains(t, view, "Test", "View() should contain the title")
+	assert.Contains(t, view.Content, "Test", "View() should contain the title")
 }

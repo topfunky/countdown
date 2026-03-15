@@ -2,6 +2,7 @@ package countdown
 
 import (
 	"fmt"
+	"image/color"
 	"math"
 	"os"
 	"os/signal"
@@ -10,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/spinner"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // bigDigits contains ASCII art representations of digits 0-9 and colon.
@@ -205,7 +206,7 @@ func tick(seconds int) tea.Cmd {
 // Update handles messages and updates the model.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "q", "ctrl+c", "esc":
 			m.done = true
@@ -245,9 +246,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View renders the model.
-func (m Model) View() string {
+func (m Model) View() tea.View {
 	if m.done {
-		return ""
+		return tea.NewView("")
 	}
 
 	// Check if we're in final phase
@@ -302,7 +303,7 @@ func (m Model) View() string {
 
 		// For big numbers, render title and number on separate lines
 		content := fmt.Sprintf("%s %s\n%s", spinnerView, titleView, countView)
-		return m.containerStyle.Render(content)
+		return tea.NewView(m.containerStyle.Render(content))
 	}
 
 	// Regular number rendering
@@ -340,7 +341,7 @@ func (m Model) View() string {
 	// Combine all parts
 	content := fmt.Sprintf("%s %s%s", spinnerView, titleView, countView)
 
-	return m.containerStyle.Render(content)
+	return tea.NewView(m.containerStyle.Render(content))
 }
 
 // isInFinalPhase checks if the current count is in the final phase.
@@ -353,8 +354,8 @@ func (m Model) isInFinalPhase() bool {
 	return m.current >= m.config.FinalPhase
 }
 
-// parseColor parses a color string and returns a lipgloss.TerminalColor.
-func parseColor(s string) lipgloss.TerminalColor {
+// parseColor parses a color string and returns a color.Color.
+func parseColor(s string) color.Color {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return lipgloss.NoColor{}
@@ -371,7 +372,7 @@ func parseColor(s string) lipgloss.TerminalColor {
 
 // highContrastColor returns a high-contrast foreground color (black or white)
 // for the given background color string.
-func highContrastColor(bgColor string) lipgloss.TerminalColor {
+func highContrastColor(bgColor string) color.Color {
 	bgColor = strings.TrimSpace(bgColor)
 	if bgColor == "" {
 		return lipgloss.Color("15") // White for default/empty background
